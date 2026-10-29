@@ -1,0 +1,31 @@
+# Third-party files chezmoi downloads and keeps updated.
+# refreshPeriod = how often `chezmoi apply` re-checks; unset = only when the entry changes.
+
+[".local/bin/fzf-preview.sh"]
+type = "file"
+url = "https://raw.githubusercontent.com/junegunn/fzf/master/bin/fzf-preview.sh"
+executable = true
+refreshPeriod = "168h"
+
+[".tmux/plugins/tpm"]
+type = "git-repo"
+url = "https://github.com/tmux-plugins/tpm"
+refreshPeriod = "168h"
+
+# Loaded directly by .tmux.conf (not through TPM). Pinned, never auto-updated.
+# To upgrade: change the tag, then rm -rf ~/.config/tmux/plugins/catppuccin && chezmoi apply
+[".config/tmux/plugins/catppuccin/tmux"]
+type = "git-repo"
+url = "https://github.com/catppuccin/tmux"
+clone.args = ["--depth", "1", "--branch", "v2.3.2"]
+
+{{- if .desktop }}
+
+# Font used by ghostty
+[".local/share/fonts/JetBrainsMonoNerdFont"]
+type = "archive"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz"
+include = ["JetBrainsMonoNerdFont-*.ttf"]   # skip the Mono/Propo/NL variants (~200 MB)
+exact = true
+refreshPeriod = "720h"
+{{- end }}
