@@ -2,6 +2,12 @@
 {{- $role  := promptChoiceOnce . "role" "Machine role" (list "laptop" "server" "test") -}}
 {{- $name  := promptStringOnce . "name" "Git user.name" -}}
 {{- $email := promptStringOnce . "email" "Git user.email" -}}
+{{- /* Servers never get the vault. Elsewhere it's opt-in so secrets can be enabled later
+       by setting bitwarden = true once rbw is configured. */ -}}
+{{- $bitwarden := false -}}
+{{- if ne $role "server" -}}
+{{-   $bitwarden = promptBoolOnce . "bitwarden" "Render secrets from Bitwarden? (rbw must be configured and unlocked)" (eq $role "laptop") -}}
+{{- end -}}
 
 {{- /* age encryption is enabled only if the identity file exists on this machine */ -}}
 {{- $ageKey := joinPath .chezmoi.homeDir ".config/chezmoi/key.txt" -}}
@@ -15,8 +21,8 @@ encryption = "age"
 role  = {{ $role | quote }}
 name  = {{ $name | quote }}
 email = {{ $email | quote }}
-# Bitwarden-backed secrets render only on the main laptop
-secrets = {{ eq $role "laptop" }}
+bitwarden = {{ $bitwarden }}
+secrets   = {{ $bitwarden }}
 desktop = {{ ne $role "server" }}
 
 {{- if $hasAge }}
