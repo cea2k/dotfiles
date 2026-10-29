@@ -1,0 +1,7 @@
+{{- if ne .role "server" -}}
+#!/bin/bash
+# mise config hash: {{ include "private_dot_config/mise/config.toml" | sha256sum }}
+set -euo pipefail
+command -v mise >/dev/null 2>&1 || { echo "[dotfiles] mise not installed, skipping"; exit 0; }
+mise install --yes
+{{ end -}}

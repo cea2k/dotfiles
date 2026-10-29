@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Lists packages installed on this machine that packages.yaml doesn't know about.
+# Either add them to .chezmoidata/packages.yaml or remove them.
+set -euo pipefail
+
+state="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+baseline="$state/dnf-baseline.txt"
+data="$(chezmoi data --format json)"
+
+declared_dnf="$(jq -r '(.packages.fedora.dnf.common + (if .desktop then .packages.fedora.dnf.desktop else [] end))[]' <<<"$data" | sort -u)"
+installed_dnf="$(dnf repoquery --userinstalled --qf '%{name}\n' 2>/dev/null | sort -u)"
+known="$( { echo "$declared_dnf"; [ -f "$baseline" ] && cat "$baseline"; } | sort -u)"
+
+extra_dnf="$(comm -13 <(echo "$known") <(echo "$installed_dnf"))"
+missing_dnf="$(comm -23 <(echo "$declared_dnf") <(echo "$installed_dnf"))"
+
+declared_fp="$(jq -r '.packages.fedora.flatpak[]' <<<"$data" | sort -u)"
+installed_fp="$(flatpak list --app --user --columns=application 2>/dev/null | sort -u)"
+extra_fp="$(comm -13 <(echo "$declared_fp") <(echo "$installed_fp"))"
+
+report() {
+  if [ -n "$2" ]; then
+    echo "== $1"
+    while IFS= read -r line; do echo "  $line"; done <<<"$2"
+  fi
+}
+report "dnf: installed but not declared" "$extra_dnf"
+report "dnf: declared but not installed (run chezmoi apply)" "$missing_dnf"
+report "flatpak: installed but not declared" "$extra_fp"
+
+echo "== dotfiles: local changes not in repo"
+chezmoi status || true

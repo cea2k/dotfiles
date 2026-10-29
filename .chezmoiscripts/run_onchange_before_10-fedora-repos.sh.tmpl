@@ -1,0 +1,18 @@
+{{- if eq .chezmoi.osRelease.id "fedora" -}}
+#!/bin/bash
+# hash: {{ pick .packages.fedora "copr" "repos" | toJson | sha256sum }}
+set -euo pipefail
+
+rpm -q dnf5-plugins >/dev/null 2>&1 || sudo dnf install -y dnf5-plugins
+
+{{ range .packages.fedora.copr -}}
+sudo dnf copr enable -y {{ . | quote }}
+{{ end }}
+
+{{- range .packages.fedora.repos }}
+repo_file="/etc/yum.repos.d/$(basename {{ . | quote }})"
+if [ ! -f "$repo_file" ]; then
+  sudo dnf config-manager addrepo --from-repofile={{ . | quote }}
+fi
+{{ end -}}
+{{ end -}}

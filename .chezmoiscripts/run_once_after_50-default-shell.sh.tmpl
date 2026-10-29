@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euo pipefail
+zsh_path="$(command -v zsh || true)"
+[ -z "$zsh_path" ] && exit 0
+current="$(getent passwd "$USER" | cut -d: -f7)"
+if [ "$current" != "$zsh_path" ]; then
+  sudo usermod -s "$zsh_path" "$USER"
+  echo "[dotfiles] default shell set to zsh (log out and back in)"
+fi

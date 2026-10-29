@@ -1,0 +1,11 @@
+{{- if eq .chezmoi.osRelease.id "fedora" -}}
+#!/bin/bash
+# Snapshot packages present BEFORE dotfiles touched this machine.
+# dotfiles-drift ignores these, so it only reports what you added by hand later.
+set -euo pipefail
+state="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+mkdir -p "$state"
+[ -f "$state/dnf-baseline.txt" ] && exit 0
+dnf repoquery --userinstalled --qf '%{name}\n' 2>/dev/null | sort -u > "$state/dnf-baseline.txt"
+echo "[dotfiles] saved dnf baseline ($(wc -l < "$state/dnf-baseline.txt") packages)"
+{{ end -}}

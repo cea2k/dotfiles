@@ -1,0 +1,19 @@
+# Repo-only files (never written to $HOME)
+README.md
+LICENSE
+
+{{- if not .secrets }}
+.config/zsh/secrets.zsh
+{{- end }}
+
+{{- if not .desktop }}
+# Servers: no desktop or GUI configs
+.config/niri
+.config/noctalia
+.config/ghostty
+.config/mise
+{{- end }}
+
+{{- if ne .chezmoi.osRelease.id "fedora" }}
+.local/bin/dotfiles-drift
+{{- end }}

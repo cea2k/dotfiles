@@ -1,0 +1,18 @@
+[user]
+	name = {{ .name }}
+	email = {{ .email }}
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true
+[push]
+	autoSetupRemote = true
+[rebase]
+	autoStash = true
+[diff]
+	algorithm = histogram
+[core]
+	editor = nvim
+# Per-machine overrides (work email, signing key...) live outside the repo
+[include]
+	path = ~/.gitconfig.local

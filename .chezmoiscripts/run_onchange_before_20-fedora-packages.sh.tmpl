@@ -1,0 +1,8 @@
+{{- if eq .chezmoi.osRelease.id "fedora" -}}
+{{- $pkgs := .packages.fedora.dnf.common -}}
+{{- if .desktop }}{{ $pkgs = concat $pkgs .packages.fedora.dnf.desktop }}{{ end -}}
+#!/bin/bash
+# hash: {{ $pkgs | toJson | sha256sum }}
+set -euo pipefail
+sudo dnf install -y {{ $pkgs | uniq | sortAlpha | join " " }}
+{{ end -}}

@@ -1,0 +1,5 @@
+# Global runtimes. Project versions belong in each repo's mise.toml.
+# Editing this file triggers `mise install` on the next `chezmoi apply`.
+[tools]
+node = "lts"
+pnpm = "latest"

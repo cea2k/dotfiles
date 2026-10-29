@@ -1,0 +1,8 @@
+{{- if and .desktop (eq .chezmoi.osRelease.id "fedora") -}}
+#!/bin/bash
+# hash: {{ .packages.fedora.flatpak | toJson | sha256sum }}
+# User-scope installs: no sudo, and app data stays under ~/.var/app
+set -euo pipefail
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user -y --noninteractive flathub {{ .packages.fedora.flatpak | join " " }}
+{{ end -}}

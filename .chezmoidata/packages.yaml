@@ -1,0 +1,55 @@
+# Single source of truth for system packages.
+# Editing this file makes the matching run_onchange_ scripts run again on `chezmoi apply`.
+packages:
+  fedora:
+    # `dnf copr enable` targets
+    copr:
+      - jdxcode/mise
+      - scottames/ghostty        # verify against ghostty docs before first run
+      # TODO: noctalia COPR (add the one you use today)
+
+    # Third-party .repo file URLs (written to /etc/yum.repos.d)
+    # e.g. - https://download.docker.com/linux/fedora/docker-ce.repo
+    repos: []
+
+    dnf:
+      common:
+        - git
+        - zsh
+        - tmux
+        - neovim
+        - ripgrep
+        - fd-find
+        - fzf
+        - bat
+        - jq
+        - htop
+        - curl
+        - unzip
+        - gh
+        - age
+        - rbw
+        - pinentry
+        - mise
+      desktop:
+        - niri
+        - ghostty
+
+    flatpak:
+      - com.bitwarden.desktop
+
+  ubuntu:
+    apt:
+      - git
+      - zsh
+      - tmux
+      - neovim
+      - ripgrep
+      - fd-find
+      - fzf
+      - bat
+      - jq
+      - htop
+      - curl
+      - unzip
+      - age
