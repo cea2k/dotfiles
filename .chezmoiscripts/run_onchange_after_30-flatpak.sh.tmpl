@@ -3,6 +3,7 @@
 # hash: {{ .packages.fedora.flatpak | toJson | sha256sum }}
 # User-scope installs: no sudo, and app data stays under ~/.var/app
 set -euo pipefail
+command -v flatpak >/dev/null || sudo dnf install -y flatpak   # missing on minimal installs
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install --user -y --noninteractive flathub {{ .packages.fedora.flatpak | join " " }}
 {{ end -}}
