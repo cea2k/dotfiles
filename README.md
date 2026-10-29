@@ -104,7 +104,8 @@ dot_zshrc.tmpl                # template
 dot_gitconfig.tmpl            # template
 dot_tmux.conf
 dot_local/bin/executable_dotfiles-drift
-private_dot_config/           # ghostty, niri, noctalia, mise, zsh/secrets
+private_dot_config/           # ghostty, niri, mise, zsh/secrets
+dot_local/state/noctalia/     # noctalia settings (it keeps config in ~/.local/state)
 ```
 
 On `chezmoi apply`, things run in this order:
@@ -138,7 +139,15 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply cea2k
 # answers: role = laptop, Bitwarden = yes
 ```
 
-Then log out and back in (the default shell is now zsh), open Bitwarden desktop and enable the SSH agent, and verify with `ssh -T git@github.com`.
+Then:
+
+1. Log out and back in (the default shell is now zsh).
+2. Open Bitwarden desktop, enable the SSH agent, and verify with `ssh -T git@github.com`.
+3. Switch the repo to SSH so you can push. The restore cloned over HTTPS, which can pull but not push:
+   ```bash
+   chezmoi git -- remote set-url origin git@github.com:cea2k/dotfiles.git
+   ```
+4. Reinstall noctalia plugins from its UI if they didn't come back on their own. The list is under `[plugins]` in `~/.local/state/noctalia/settings.toml`. If the theme colors look like defaults, re-select the wallpaper once to regenerate the palette.
 
 ### Test machine (old HP, Fedora)
 
@@ -147,7 +156,7 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply cea2k
 # answers: role = test, Bitwarden = no
 ```
 
-This is a full rehearsal of the laptop restore, without secrets.
+This is a full rehearsal of the laptop restore, without secrets. Follow steps 1, 3 and 4 from the laptop list above as needed.
 
 ### Server (Hostinger VPS, Ubuntu)
 
@@ -213,6 +222,7 @@ podman run --rm -it fedora:44 bash -c '
 | An install script did not re-run | `run_onchange_` reruns only when its content changes. Force all with `chezmoi state delete-bucket --bucket=entryState` |
 | A `run_once_` script must run again | `chezmoi state delete-bucket --bucket=scriptState` |
 | COPR enable fails | Check the COPR name and that it builds for this Fedora release |
+| `chezmoi git -- push` asks for a username | The remote is HTTPS. Run `chezmoi git -- remote set-url origin git@github.com:cea2k/dotfiles.git` |
 
 ## Not managed here (on purpose)
 
