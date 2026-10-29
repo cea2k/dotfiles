@@ -103,7 +103,6 @@ To change one, edit the `[data]` section of that file and run `chezmoi init && c
 dot_zshrc.tmpl                # template
 dot_gitconfig.tmpl            # template
 dot_tmux.conf
-dot_tmuxinator/
 dot_local/bin/executable_dotfiles-drift
 private_dot_config/           # ghostty, niri, noctalia, mise, zsh/secrets
 ```

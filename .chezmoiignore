@@ -12,7 +12,6 @@ LICENSE
 .config/noctalia
 .config/ghostty
 .config/mise
-.tmuxinator
 {{- end }}
 
 {{- if ne .chezmoi.osRelease.id "fedora" }}
