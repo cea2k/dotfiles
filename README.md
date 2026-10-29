@@ -18,11 +18,19 @@ Personal environment managed with [chezmoi](https://www.chezmoi.io/): dotfiles, 
 
 | Role | Machine | Desktop configs | Bitwarden secrets | Packages |
 |---|---|---|---|---|
-| `laptop` | Yoga Pro 7, Fedora | yes | yes | dnf + COPR + Flatpak + mise |
-| `test` | old HP, Fedora | yes | no | dnf + COPR + Flatpak + mise |
-| `server` | Hostinger VPS, Ubuntu | no | no | apt (user tools only) |
+| `laptop` | Yoga Pro 7, Fedora | yes | asked, default yes | dnf + COPR + Flatpak + mise |
+| `test` | old HP, Fedora | yes | asked, default no | dnf + COPR + Flatpak + mise |
+| `server` | Hostinger VPS, Ubuntu | no | never (not asked) | apt (user tools only) |
 
-The role is asked once and stored in `~/.config/chezmoi/chezmoi.toml`. To change it, edit that file or run `chezmoi init --prompt`.
+The answers are asked once and stored in `~/.config/chezmoi/chezmoi.toml`. Check them with:
+
+```bash
+chezmoi execute-template 'role={{ .role }} bitwarden={{ .bitwarden }}'
+```
+
+To change an answer, edit the `[data]` section of that file and run `chezmoi init && chezmoi apply` (existing answers are kept, not re-asked). `chezmoi init --prompt` re-asks everything.
+
+**Enabling Bitwarden later:** set up rbw (see the laptop restore below), set `bitwarden = true` in the config, then run `chezmoi init && chezmoi apply`.
 
 ### Repo layout
 
@@ -72,6 +80,8 @@ Store that `AGE-SECRET-KEY-...` line as the **password** of a Bitwarden login it
 
 ### 4. Import the current machine's configs
 
+Either set up rbw first (step 1 of the laptop restore below) and answer **yes** to the Bitwarden question, or answer **no** and enable it later.
+
 ```bash
 chezmoi init git@github.com:<github-user>/dotfiles.git
 chezmoi diff                      # REVIEW: repo .zshrc/.gitconfig will replace yours
@@ -105,7 +115,7 @@ chmod 600 ~/.config/chezmoi/key.txt
 
 # 3. Everything else
 sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply <github-user>
-# answer: role = laptop
+# answer: role = laptop, Bitwarden = yes
 ```
 
 Then: log out and in (default shell is now zsh), open Bitwarden desktop and enable the SSH agent, and run `ssh -T git@github.com` to verify.
@@ -188,7 +198,8 @@ podman run --rm -it fedora:44 bash -c '
 | A script did not re-run after editing it | Only content changes trigger `run_onchange_`. Use `chezmoi state delete-bucket --bucket=entryState` to force all of them. |
 | `run_once_` script needs to run again | `chezmoi state delete-bucket --bucket=scriptState` |
 | COPR enable fails | Check the COPR name and that it builds for this Fedora release |
-| Wrong role on a machine | Edit `~/.config/chezmoi/chezmoi.toml`, then `chezmoi apply` |
+| `rbw get: failed to load config` during diff/apply | rbw isn't set up. Configure it, or set `bitwarden = false` and run `chezmoi init` |
+| Wrong role on a machine | Edit `[data]` in `~/.config/chezmoi/chezmoi.toml`, then `chezmoi init && chezmoi apply` |
 
 ## Not managed here (on purpose)
 
