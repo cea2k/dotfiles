@@ -1,167 +1,55 @@
 # dotfiles
 
-Personal environment managed with [chezmoi](https://www.chezmoi.io/): dotfiles, system packages, runtimes and secrets. Goal: a new machine is usable in minutes with a single command.
+Personal environment managed with [chezmoi](https://www.chezmoi.io/): config files, system packages, runtimes, fonts and secrets. A new machine is usable with one command.
 
-## How it works
+## Daily use
 
-| Concern | Mechanism |
-|---|---|
-| Config files | chezmoi source files (`dot_*`, `private_dot_config/...`) |
-| Per-machine differences | `role` chosen at `chezmoi init`: `laptop`, `server`, `test` |
-| System packages, COPR, repos, Flatpak | `.chezmoidata/packages.yaml` + `run_onchange_` scripts |
-| Runtimes (node, pnpm...) | mise, global config in `~/.config/mise/config.toml` |
-| Env-var secrets | Bitwarden item `dotfiles-env`, read through `rbw` at apply time |
-| Secret files | age-encrypted files in this repo (`encrypted_*`) |
-| SSH keys | Bitwarden desktop SSH agent. Keys are never stored here. |
+chezmoi keeps a copy of every managed file in its repo (`~/.local/share/chezmoi`). Commands work from any directory, and paths are the real ones in your home.
 
-### Roles
+### Plain files (most configs)
 
-| Role | Machine | Desktop configs | Bitwarden secrets | Packages |
-|---|---|---|---|---|
-| `laptop` | Yoga Pro 7, Fedora | yes | asked, default yes | dnf + COPR + Flatpak + mise |
-| `test` | old HP, Fedora | yes | asked, default no | dnf + COPR + Flatpak + mise |
-| `server` | Hostinger VPS, Ubuntu | no | never (not asked) | apt (user tools only) |
-
-The answers are asked once and stored in `~/.config/chezmoi/chezmoi.toml`. Check them with:
+Edit them normally, then save the change back to the repo:
 
 ```bash
-chezmoi execute-template 'role={{ .role }} bitwarden={{ .bitwarden }}'
+nvim ~/.tmux.conf
+chezmoi re-add                 # copy your edits into the repo
 ```
 
-To change an answer, edit the `[data]` section of that file and run `chezmoi init && chezmoi apply` (existing answers are kept, not re-asked). `chezmoi init --prompt` re-asks everything.
+### Templates (`.zshrc`, `.gitconfig`)
 
-**Enabling Bitwarden later:** set up rbw (see the laptop restore below), set `bitwarden = true` in the config, then run `chezmoi init && chezmoi apply`.
-
-### Repo layout
-
-```
-.chezmoi.toml.tmpl            # prompts (role, git identity), age + hook config
-.install-prereqs.sh           # hook: installs rbw/age before templates render
-.chezmoiignore                # what each role skips
-.chezmoidata/packages.yaml    # all packages, single source of truth
-.chezmoiscripts/              # run_once_ / run_onchange_ install scripts
-dot_zshrc.tmpl
-dot_gitconfig.tmpl
-dot_local/bin/executable_dotfiles-drift
-private_dot_config/mise/config.toml
-private_dot_config/zsh/private_secrets.zsh.tmpl
-```
-
-Scripts run in this order: `05` dnf baseline, `10` repos/COPR, `20` packages, then file updates, then `30` Flatpak, `40` mise, `50` default shell.
-
----
-
-## One-time setup (do this once, ever)
-
-### 1. Bitwarden: secrets item
-
-Create a Bitwarden item named **`dotfiles-env`** (any type, a Secure Note works). Add one **custom field per environment variable**:
-
-| Field name | Value |
-|---|---|
-| `GITHUB_TOKEN` | `ghp_...` |
-| `NPM_TOKEN` | `...` |
-
-Field names must be valid shell variable names. They are rendered to `~/.config/zsh/secrets.zsh` (mode 0600) and sourced by zsh.
-
-### 2. Bitwarden: SSH agent
-
-In the Bitwarden desktop app: Settings, enable the SSH agent. Import or generate your SSH keys inside Bitwarden. `.zshrc` points `SSH_AUTH_SOCK` at the agent socket (Flatpak and native paths are both handled).
-
-### 3. age key (only if you need encrypted files)
+These are generated per machine, so edit the template, never the real file (`apply` would overwrite it):
 
 ```bash
-mkdir -p ~/.config/chezmoi
-age-keygen -o ~/.config/chezmoi/key.txt
-grep AGE-SECRET-KEY ~/.config/chezmoi/key.txt
+chezmoi edit --apply ~/.zshrc  # alias: cze ~/.zshrc
 ```
 
-Store that `AGE-SECRET-KEY-...` line as the **password** of a Bitwarden login item named **`chezmoi-age-key`**. Run `chezmoi init` again afterwards so the config picks up encryption.
+`chezmoi re-add` skips templates. If you edited the real file by mistake, run `chezmoi merge ~/.zshrc`.
 
-### 4. Import the current machine's configs
-
-Either set up rbw first (step 1 of the laptop restore below) and answer **yes** to the Bitwarden question, or answer **no** and enable it later.
-
-```bash
-chezmoi init git@github.com:<github-user>/dotfiles.git
-chezmoi diff                      # REVIEW: repo .zshrc/.gitconfig will replace yours
-chezmoi merge ~/.zshrc            # carry over anything you want to keep
-chezmoi add ~/.tmux.conf ~/.config/niri ~/.config/ghostty ~/.config/noctalia
-chezmoi apply
-chezmoi cd && git add -A && git commit -m "import current configs" && git push
-```
-
-Before the first apply, also fill in the missing COPR for noctalia in `packages.yaml`, and add any packages you already rely on.
-
----
-
-## Restore a machine
-
-`init <github-user>` clones `https://github.com/<github-user>/dotfiles.git`, so the repo must be public. If you make it private, use `init git@github.com:<github-user>/dotfiles.git` instead (needs SSH access first).
-
-### Laptop (Fedora, full environment)
-
-```bash
-# 1. Password manager first (templates read secrets during apply)
-sudo dnf install -y rbw age pinentry
-rbw config set email <bitwarden-email>
-rbw register        # needed on the official Bitwarden server (uses your personal API key)
-rbw unlock
-
-# 2. age key (skip if you have no encrypted files)
-mkdir -p ~/.config/chezmoi
-rbw get chezmoi-age-key > ~/.config/chezmoi/key.txt
-chmod 600 ~/.config/chezmoi/key.txt
-
-# 3. Everything else
-sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply <github-user>
-# answer: role = laptop, Bitwarden = yes
-```
-
-Then: log out and in (default shell is now zsh), open Bitwarden desktop and enable the SSH agent, and run `ssh -T git@github.com` to verify.
-
-### Test machine (old HP, Fedora)
-
-```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply <github-user>
-# answer: role = test
-```
-
-No secrets are rendered. Useful as a full rehearsal of the laptop restore.
-
-### Server (Hostinger VPS, Ubuntu)
-
-```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply <github-user>
-# answer: role = server
-```
-
-Gets shell, tmux, git and CLI tools only. It never installs or configures Docker or anything Coolify manages. There is no Bitwarden vault on the server by design. If a server needs a secret file, encrypt it with a separate server-only age key.
-
----
-
-## Daily workflow
+### Common commands
 
 | Task | Command |
 |---|---|
-| Edit a managed file | `chezmoi edit ~/.zshrc` then `chezmoi apply` |
-| Edited the real file directly | `chezmoi re-add` |
-| Start managing a new file | `chezmoi add ~/.config/foo` |
-| Add an encrypted file | `chezmoi add --encrypt ~/.config/foo/token` |
-| See pending changes | `chezmoi diff` / `chezmoi status` |
-| Commit and push | `chezmoi cd`, then normal git |
-| Pull changes on another machine | `chezmoi update` |
+| Track a new file or folder | `chezmoi add ~/.config/foo` |
+| Track a secret file (encrypted) | `chezmoi add --encrypt ~/.config/foo/token` |
+| Home vs repo out of sync? | `chezmoi status` (short), `chezmoi diff` (full) |
+| Uncommitted repo changes? | `chezmoi git -- status` |
+| Commit and push | `chezmoi git -- add -A`, then `chezmoi git -- commit -m "msg"`, then `chezmoi git -- push` |
+| Get changes from GitHub | `chezmoi update` (git pull, then apply) |
+| Write repo state to home | `chezmoi apply` (local only, no git) |
+| Stop tracking a file | `chezmoi forget ~/.config/foo` (the file itself stays) |
 | Secret changed in Bitwarden | `rbw sync && chezmoi apply` |
+
+`chezmoi status` compares repo and home, not git. Empty output only means they match, not that everything is pushed.
 
 ### Adding software
 
-Never `dnf install` something you want to keep without recording it:
+Don't `dnf install` something you want to keep without recording it:
 
-1. Add it to `.chezmoidata/packages.yaml` (`chezmoi cd`, then edit the file).
-2. `chezmoi apply`. The matching script re-runs because the package list hash changed.
-3. Commit.
+1. `chezmoi cd`, edit `.chezmoidata/packages.yaml`, then `exit`.
+2. `chezmoi apply`. The install script re-runs because the list changed.
+3. Commit and push.
 
-COPR goes under `copr:`, third-party `.repo` URLs under `repos:`, Flatpak app IDs under `flatpak:`. Global runtimes go in `private_dot_config/mise/config.toml`. Project runtimes belong in each project's own `mise.toml`.
+COPR goes under `copr:`, third-party `.repo` URLs under `repos:`, Flatpak app IDs under `flatpak:`. Global runtimes go in `~/.config/mise/config.toml`, and project runtimes in each project's `mise.toml`. Anything you would otherwise `curl` or `git clone` by hand (scripts, plugins, fonts) goes in `.chezmoiexternal.toml.tmpl`.
 
 ### Catching drift
 
@@ -169,7 +57,131 @@ COPR goes under `copr:`, third-party `.repo` URLs under `repos:`, Flatpak app ID
 dotfiles-drift
 ```
 
-This reports dnf packages installed by hand that aren't in `packages.yaml` (ignoring the baseline taken on first apply), declared packages that are missing, undeclared Flatpaks, and unrecorded config changes. Run it weekly. This is the habit that keeps the repo from dying.
+This lists dnf packages installed by hand but not in `packages.yaml` (ignoring what was installed before the first apply), declared packages that are missing, undeclared Flatpaks, and config changes not yet in the repo. Run it weekly.
+
+---
+
+## How it works
+
+| Concern | Mechanism |
+|---|---|
+| Config files | chezmoi source files (`dot_*`, `private_dot_config/...`) |
+| Per-machine differences | answers given at `chezmoi init` (role, Bitwarden) |
+| System packages, COPR, repos, Flatpak | `.chezmoidata/packages.yaml` + `run_onchange_` scripts |
+| Downloaded files (fzf-preview, tpm, catppuccin, fonts) | `.chezmoiexternal.toml.tmpl` |
+| Tmux plugins | TPM, installed automatically when `.tmux.conf` changes |
+| Runtimes (node, pnpm...) | mise |
+| Env-var secrets | Bitwarden item `dotfiles-env`, read through `rbw` |
+| Secret files | age-encrypted files in this repo (`encrypted_*`) |
+| SSH keys | Bitwarden desktop SSH agent. Keys are never stored here. |
+
+### Roles
+
+| Role | Machine | Desktop configs, fonts | Bitwarden secrets | Packages |
+|---|---|---|---|---|
+| `laptop` | Yoga Pro 7, Fedora | yes | asked, default yes | dnf + COPR + Flatpak + mise |
+| `test` | old HP, Fedora | yes | asked, default no | dnf + COPR + Flatpak + mise |
+| `server` | Hostinger VPS, Ubuntu | no | never | apt (user tools only) |
+
+Answers are stored in `~/.config/chezmoi/chezmoi.toml`. Check them with:
+
+```bash
+chezmoi execute-template 'role={{ .role }} bitwarden={{ .bitwarden }}'
+```
+
+To change one, edit the `[data]` section of that file and run `chezmoi init && chezmoi apply`. `chezmoi init` regenerates that file from `.chezmoi.toml.tmpl` and keeps existing answers; it never touches your home files. Don't hand-edit settings outside `[data]` there, as `init` overwrites them. Put them in `.chezmoi.toml.tmpl` instead.
+
+### Repo layout
+
+```
+.chezmoi.toml.tmpl            # prompts (role, git identity, Bitwarden), age + hook config
+.install-prereqs.sh           # hook: installs rbw/age before templates render
+.chezmoiignore                # what each role skips
+.chezmoidata/packages.yaml    # all packages, single source of truth
+.chezmoiexternal.toml.tmpl    # downloaded files: fzf-preview, tpm, catppuccin, fonts
+.chezmoiscripts/              # install scripts (see order below)
+dot_zshrc.tmpl                # template
+dot_gitconfig.tmpl            # template
+dot_tmux.conf
+dot_tmuxinator/
+dot_local/bin/executable_dotfiles-drift
+private_dot_config/           # ghostty, niri, noctalia, mise, zsh/secrets
+```
+
+On `chezmoi apply`, things run in this order:
+
+1. `05` dnf baseline (first run only), `10` repos and COPR, `20` packages
+2. Files and externals are written
+3. `30` Flatpak, `40` mise runtimes, `45` tmux plugins, `50` default shell to zsh (first run only)
+
+---
+
+## Restore a machine
+
+The repo is public, so `init cea2k` clones it over HTTPS with no SSH key needed.
+
+### Laptop (Fedora, full environment)
+
+```bash
+# 1. Password manager first (templates read secrets during apply)
+sudo dnf install -y rbw age pinentry
+rbw config set email <bitwarden-email>
+rbw register        # asks for client_id/secret from your Bitwarden personal API key
+rbw unlock
+
+# 2. age key (skip if there are no encrypted files in the repo)
+mkdir -p ~/.config/chezmoi
+rbw get chezmoi-age-key > ~/.config/chezmoi/key.txt
+chmod 600 ~/.config/chezmoi/key.txt
+
+# 3. Everything else
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply cea2k
+# answers: role = laptop, Bitwarden = yes
+```
+
+Then log out and back in (the default shell is now zsh), open Bitwarden desktop and enable the SSH agent, and verify with `ssh -T git@github.com`.
+
+### Test machine (old HP, Fedora)
+
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply cea2k
+# answers: role = test, Bitwarden = no
+```
+
+This is a full rehearsal of the laptop restore, without secrets.
+
+### Server (Hostinger VPS, Ubuntu)
+
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply cea2k
+# answer: role = server
+```
+
+The server gets shell, tmux, git and CLI tools only. It never installs or configures Docker or anything Coolify manages, and it has no Bitwarden vault by design. If it needs a secret file, encrypt it with a separate server-only age key.
+
+---
+
+## One-time setup (already done, kept for reference)
+
+### Bitwarden secrets item
+
+Only needed when Bitwarden = yes. Create a Secure Note named **`dotfiles-env`** with one **custom field per environment variable** (field name = variable name, e.g. `GITHUB_TOKEN`). Then run `rbw sync`, and check with `rbw get --raw dotfiles-env`.
+
+The fields are rendered to `~/.config/zsh/secrets.zsh` (mode 0600), which `.zshrc` sources. This covers shell-wide tokens only; project `.env` files are not managed here.
+
+### Bitwarden SSH agent
+
+In Bitwarden desktop, open Settings and enable the SSH agent, then import or create your SSH keys there. `.zshrc` points `SSH_AUTH_SOCK` at the agent socket (the Flatpak and native paths are both handled).
+
+### age key (only for encrypted files)
+
+```bash
+mkdir -p ~/.config/chezmoi
+age-keygen -o ~/.config/chezmoi/key.txt
+grep AGE-SECRET-KEY ~/.config/chezmoi/key.txt
+```
+
+Store that `AGE-SECRET-KEY-...` line as the password of a Bitwarden login item named **`chezmoi-age-key`**, then run `chezmoi init` so the config enables encryption.
 
 ---
 
@@ -178,28 +190,30 @@ This reports dnf packages installed by hand that aren't in `packages.yaml` (igno
 ```bash
 chezmoi diff                       # what apply would change
 chezmoi apply --dry-run --verbose  # also shows scripts
-chezmoi execute-template < .chezmoiscripts/run_onchange_before_20-fedora-packages.sh.tmpl
+chezmoi cat ~/.zshrc               # rendered output of a template
 ```
 
-A full bootstrap test in a throwaway Fedora container:
+Full bootstrap in a throwaway Fedora container:
 
 ```bash
 podman run --rm -it fedora:44 bash -c '
   dnf install -y curl git sudo && useradd -m -G wheel t && echo "t ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers &&
-  su - t -c "sh -c \"\$(curl -fsLS get.chezmoi.io)\" -- -b ~/.local/bin init --apply <github-user>"'
-# answer: role = test
+  su - t -c "sh -c \"\$(curl -fsLS get.chezmoi.io)\" -- -b ~/.local/bin init --apply cea2k"'
+# answers: role = test, Bitwarden = no
 ```
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| Apply hangs or fails on `secrets.zsh` | `rbw unlock`, or `rbw sync` if the item was just created |
-| A script did not re-run after editing it | Only content changes trigger `run_onchange_`. Use `chezmoi state delete-bucket --bucket=entryState` to force all of them. |
-| `run_once_` script needs to run again | `chezmoi state delete-bucket --bucket=scriptState` |
+| `rbw get: failed to load config` | rbw isn't set up. Configure it, or set `bitwarden = false` and run `chezmoi init` |
+| `couldn't find entry for 'dotfiles-env'` | Create the item (see one-time setup), then `rbw sync` |
+| Apply hangs or fails on `secrets.zsh` | `rbw unlock` |
+| `{{` or `-if: command not found` when a shell starts | Template syntax ended up in the real file. Edit with `chezmoi edit`, then `chezmoi apply` |
+| `config file template has changed` warning | `chezmoi init` |
+| An install script did not re-run | `run_onchange_` reruns only when its content changes. Force all with `chezmoi state delete-bucket --bucket=entryState` |
+| A `run_once_` script must run again | `chezmoi state delete-bucket --bucket=scriptState` |
 | COPR enable fails | Check the COPR name and that it builds for this Fedora release |
-| `rbw get: failed to load config` during diff/apply | rbw isn't set up. Configure it, or set `bitwarden = false` and run `chezmoi init` |
-| Wrong role on a machine | Edit `[data]` in `~/.config/chezmoi/chezmoi.toml`, then `chezmoi init && chezmoi apply` |
 
 ## Not managed here (on purpose)
 
