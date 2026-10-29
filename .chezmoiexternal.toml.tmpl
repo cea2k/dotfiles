@@ -13,11 +13,13 @@ url = "https://github.com/tmux-plugins/tpm"
 refreshPeriod = "168h"
 
 # Loaded directly by .tmux.conf (not through TPM). Pinned, never auto-updated.
-# To upgrade: change the tag, then rm -rf ~/.config/tmux/plugins/catppuccin && chezmoi apply
+# To upgrade: change the tag in both lines below, then chezmoi apply --refresh-externals
 [".config/tmux/plugins/catppuccin/tmux"]
 type = "git-repo"
 url = "https://github.com/catppuccin/tmux"
 clone.args = ["--depth", "1", "--branch", "v2.3.2"]
+# A tag clone is a detached HEAD, where a plain `git pull` fails. Pull the tag explicitly.
+pull.args = ["--ff-only", "origin", "tag", "v2.3.2"]
 
 {{- if .desktop }}
 
