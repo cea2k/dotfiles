@@ -1,20 +1,24 @@
-# Managed by chezmoi. Edit with: chezmoi edit ~/.zshrc
+# Managed by chezmoi. Edit with: chezmoi edit --apply ~/.zshrc
 # Machine-only tweaks go in ~/.zshrc.local (not tracked).
 
 # --- History ---------------------------------------------------------------
-HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
-mkdir -p "${HISTFILE:h}"
-HISTSIZE=100000
-SAVEHIST=100000
-setopt SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY HIST_IGNORE_DUPS HIST_IGNORE_SPACE
 
-# --- Basics ----------------------------------------------------------------
-setopt AUTO_CD INTERACTIVE_COMMENTS
-bindkey -e
-autoload -Uz compinit && compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zcompdump"
+export PATH="$HOME/bin:$HOME/.local/bin:$HOME/.opencode/bin:/usr/local/bin:$PATH"
 export EDITOR=nvim VISUAL=nvim
-path=("$HOME/.local/bin" $path)
+bindkey -e   # emacs keys; zsh picks vi mode when EDITOR contains "vi"
 
+# --- Completion ------------------------------------------------------------
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+# --- Aliases ---------------------------------------------------------------
+alias cz='chezmoi'
+alias cze='chezmoi edit --apply'
 {{- if eq .chezmoi.osRelease.id "ubuntu" }}
 
 # Debian/Ubuntu ship these under different binary names
@@ -22,25 +26,46 @@ alias bat='batcat'
 alias fd='fdfind'
 {{- end }}
 
-# --- Tools -----------------------------------------------------------------
-command -v mise >/dev/null && eval "$(mise activate zsh)"
-command -v fzf  >/dev/null && source <(fzf --zsh)
+if command -v eza >/dev/null; then
+  alias ls='eza --icons'
+  alias ll='eza -l -g --icons --git'
+  alias tree='eza --tree --icons'
+fi
+command -v {{ if eq .chezmoi.osRelease.id "ubuntu" }}batcat{{ else }}bat{{ end }} >/dev/null && alias cat='bat'
 
-{{- if .secrets }}
+# --- Tools -----------------------------------------------------------------
+# mise first, so tools it provides are on PATH for everything below
+command -v mise     >/dev/null && eval "$(mise activate zsh)"
+command -v starship >/dev/null && eval "$(starship init zsh)"
+# fzf: Ctrl-R history, Ctrl-T files, Alt-C directories
+command -v fzf      >/dev/null && source <(fzf --zsh)
+# zoxide: smarter cd (z, zi); must come after compinit
+command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
+# direnv: per-project environment
+command -v direnv   >/dev/null && eval "$(direnv hook zsh)"
+
+# fzf-preview.sh is fetched by chezmoi (.chezmoiexternal.toml)
+export FZF_CTRL_T_OPTS="--preview 'fzf-preview.sh {}'"
 
 # --- SSH keys served by Bitwarden desktop (keys never touch the repo) ------
+# Runtime check: harmless where Bitwarden desktop isn't running
 for sock in \
   "$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" \
   "$HOME/.bitwarden-ssh-agent.sock"; do
   [[ -S "$sock" ]] && export SSH_AUTH_SOCK="$sock" && break
 done
+{{- if .secrets }}
 
 # --- Secrets rendered from Bitwarden ---------------------------------------
 [[ -r "$HOME/.config/zsh/secrets.zsh" ]] && source "$HOME/.config/zsh/secrets.zsh"
 {{- end }}
 
-# --- Aliases ---------------------------------------------------------------
-alias cz='chezmoi'
-alias ll='ls -lah --color=auto'
-
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+# --- Plugins: must stay at the very end (syntax highlighting last) ---------
+for plugin in \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; do
+  [[ -r "$plugin" ]] && source "$plugin"
+done
+unset plugin sock

@@ -1,0 +1,30 @@
+// The built-in laptop monitor is usually called "eDP-1".
+// Find more information on the wiki:
+// https://niri-wm.github.io/niri/Configuration:-Outputs
+// Remember to uncomment the node by removing "/-"!
+
+// Laptop Built-in Display (Secondary monitor, placed to the right)
+output "eDP-1" {
+//    mode "2880x1800@120.000"
+    scale 1.5
+
+    // Treat as primary focus upon login
+    focus-at-startup
+
+    // Transform allows to rotate the output counter-clockwise, valid values are:
+    // normal, 90, 180, 270, flipped, flipped-90, flipped-180 and flipped-270.
+    transform "normal"
+
+    // Positioned directly to the top left
+    position x=0 y=0
+}
+
+// External Samsung 4K (Primary monitor)
+output "HDMI-A-1" {
+    //mode "3840x2160@30.000"
+    scale 1.5
+
+    // Sits at the origin (top-left)
+    position x=1066 y=0
+}
+

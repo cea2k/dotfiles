@@ -1,0 +1,28 @@
+// Declare a workspace named "chat" that opens on the "DP-2" output.
+// workspace "chat123" {
+//     open-on-output "DP-2"
+// }
+
+workspace "term" {
+    open-on-output "eDP-1"
+}
+
+workspace "comm" {
+    open-on-output "eDP-1"
+}
+
+workspace "code" {
+    open-on-output "HDMI-A-1"
+}
+
+workspace "web" {
+    open-on-output "HDMI-A-1"
+}
+
+workspace "extra" {
+    open-on-output "HDMI-A-1"
+}
+
+workspace "aux" {
+    open-on-output "eDP-1"
+}

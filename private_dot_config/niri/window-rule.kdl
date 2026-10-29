@@ -1,0 +1,30 @@
+// Window rules let you adjust behavior for individual windows.
+// Find more information on the wiki:
+// https://niri-wm.github.io/niri/Configuration:-Window-Rules
+
+// Example: enable rounded corners for all windows.
+// (This example rule is commented out with a "/-" in front.)
+window-rule {
+    geometry-corner-radius 8
+    clip-to-geometry true
+}
+
+window-rule {
+    match app-id="^com.mitchellh.ghostty$"
+    open-on-workspace "term"
+}
+
+window-rule {
+    match app-id="^Slack$"
+    open-on-workspace "comm"
+}
+
+window-rule {
+    match app-id="^Spotify$"
+    open-on-workspace "aux"
+}
+
+window-rule {
+    match app-id="^Code$"
+    open-on-workspace "code"
+}
