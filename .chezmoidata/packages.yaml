@@ -6,7 +6,10 @@ packages:
     copr:
       - jdxcode/mise
       - scottames/ghostty        # verify against ghostty docs before first run
+      - atim/starship            # starship is not in Fedora's official repos
       # TODO: noctalia COPR (add the one you use today)
+      # TODO: tmuxinator is not in Fedora's official repos; check how you installed it:
+      #       rpm -qf "$(command -v tmuxinator)"   (fails = gem or other source)
 
     # Third-party .repo file URLs (written to /etc/yum.repos.d)
     # e.g. - https://download.docker.com/linux/fedora/docker-ce.repo
@@ -31,6 +34,12 @@ packages:
         - rbw
         - pinentry
         - mise
+        - eza
+        - starship
+        - zoxide
+        - direnv
+        - zsh-autosuggestions
+        - zsh-syntax-highlighting
       desktop:
         - niri
         - ghostty
@@ -53,3 +62,9 @@ packages:
       - curl
       - unzip
       - age
+      - eza
+      - zoxide
+      - direnv
+      - zsh-autosuggestions
+      - zsh-syntax-highlighting
+      # starship: not in Ubuntu 24.04 apt; .zshrc skips it when missing
