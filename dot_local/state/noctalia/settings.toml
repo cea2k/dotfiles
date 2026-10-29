@@ -1,0 +1,225 @@
+config_version = 15
+
+[bar.default]
+background_opacity = 0.79999998211860657
+border = "primary"
+capsule_radius = 6
+center = [ "bar", "clock", "weather", "control-center", "radio", "media" ]
+end = [ "notifications", "tray", "clipboard", "network", "bluetooth", "volume", "battery", "brightness", "session" ]
+font_family = "Liberation Mono"
+font_scale = 1.1999999806284904
+font_weight = 300
+margin_ends = 0
+radius = 0
+radius_top_left = 0
+scale = 1.1000000089406967
+start = [ "workspaces", "launcher", "wallhaven", "wallpaper", "screenshot", "widget" ]
+thickness = 40
+
+[control_center.calendar]
+show_events_card = false
+
+[desktop_widgets]
+schema_version = 2
+widget_order = [ "desktop-widget-0000000000000001" ]
+
+    [desktop_widgets.grid]
+    cell_size = 8
+    major_interval = 4
+    visible = true
+
+    [desktop_widgets.widget.desktop-widget-0000000000000001]
+    box_height = 0.0
+    box_width = 0.0
+    cx = 409.77618408203125
+    cy = 344.92337036132812
+    output = "eDP-1"
+    placement_height = 1227.0
+    placement_width = 1963.0
+    rotation = -0.0
+    type = "calendar"
+
+        [desktop_widgets.widget.desktop-widget-0000000000000001.settings]
+        background = true
+        background_opacity = 0.75
+        show_week_numbers = true
+
+[dock]
+border_width = 1.0
+enabled = true
+reserve_space = false
+show_dots = true
+smart_auto_hide = true
+
+[location]
+address = "Recoleta, Santiago, Chile"
+
+[lockscreen_widgets]
+enabled = false
+schema_version = 2
+widget_order = [ "lockscreen-login-box@DP-2", "lockscreen-login-box@HDMI-A-1", "lockscreen-login-box@eDP-1" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@DP-2"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 1280.0
+    cy = 1258.0
+    output = "DP-2"
+    placement_height = 1440.0
+    placement_width = 2560.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@DP-2".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_password_reveal = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 1280.0
+    cy = 1258.0
+    output = "HDMI-A-1"
+    placement_height = 1440.0
+    placement_width = 2560.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_password_reveal = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 981.4998779296875
+    cy = 978.8734130859375
+    output = "eDP-1"
+    placement_height = 1227.0
+    placement_width = 1963.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_password_reveal = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[plugins]
+enabled = [
+    "noctalia/wallhaven",
+    "noctalia/translator",
+    "nilsonlinux/world-radio",
+    "strob3/dnf-updater",
+    "nilsonlinux/speedtest-meter",
+    "noctalia/world_clock",
+    "alexander/screen-toolkit"
+]
+
+[shell]
+font_family = "Liberation Mono"
+panel_anchor_bar = "default"
+
+[theme]
+builtin = "Catppuccin"
+pure_black_dark = true
+source = "wallpaper"
+wallpaper_scheme = "m3-rainbow"
+
+[wallpaper.default]
+path = "/home/cealarcon/Pictures/wallhaven-vpdpom.jpg"
+
+[wallpaper.last]
+path = "/home/cealarcon/Pictures/wallhaven-vpdpom.jpg"
+
+[wallpaper.monitors.HDMI-A-1]
+path = "/home/cealarcon/Pictures/wallhaven-vpdpom.jpg"
+
+[wallpaper.monitors.eDP-1]
+path = "/home/cealarcon/Pictures/wallhaven-vpdpom.jpg"
+
+[weather]
+refresh_minutes = 60
+
+[widget.bar]
+type = "noctalia/world_clock:bar"
+
+[widget.battery]
+show_label = false
+
+[widget.brightness]
+show_label = false
+
+[widget.clock]
+format = "{:%H:%M} {:%D}"
+timezone = "America/Santiago"
+
+[widget.media]
+hide_when_idle = true
+
+[widget.network]
+show_label = false
+
+[widget.radio]
+type = "nilsonlinux/world-radio:radio"
+
+[widget.volume]
+show_label = false
+
+[widget.wallhaven]
+type = "noctalia/wallhaven:wallhaven"
+
+[widget.weather]
+show_condition = false
+
+[widget.widget]
+type = "alexander/screen-toolkit:widget"
+
+[widget.workspaces]
+active_pill_size = 4.0
+hide_when_empty = true
+label_source = "name"
+max_label_chars = 6
