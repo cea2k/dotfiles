@@ -47,13 +47,6 @@ command -v direnv   >/dev/null && eval "$(direnv hook zsh)"
 # fzf-preview.sh is fetched by chezmoi (.chezmoiexternal.toml)
 export FZF_CTRL_T_OPTS="--preview 'fzf-preview.sh {}'"
 
-# --- SSH keys served by Bitwarden desktop (keys never touch the repo) ------
-# Runtime check: harmless where Bitwarden desktop isn't running
-for sock in \
-  "$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" \
-  "$HOME/.bitwarden-ssh-agent.sock"; do
-  [[ -S "$sock" ]] && export SSH_AUTH_SOCK="$sock" && break
-done
 {{- if .secrets }}
 
 # --- Secrets rendered from Bitwarden ---------------------------------------
@@ -68,7 +61,7 @@ for plugin in \
   /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; do
   [[ -r "$plugin" ]] && source "$plugin"
 done
-unset plugin sock
+unset plugin
 
 # --- SSH keys served by Bitwarden desktop (keys never touch the repo) ------
 # Fixed path, set even if Bitwarden isn't running yet, so long-lived shells
