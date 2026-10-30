@@ -2,6 +2,12 @@
 README.md
 LICENSE
 
+{{- if ne .chezmoi.config.encryption "age" }}
+# No age key on this machine: skip encrypted files instead of failing
+.ssh/config
+.ssh/config.age
+{{- end }}
+
 {{- if not .secrets }}
 .config/zsh/secrets.zsh
 {{- end }}

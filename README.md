@@ -222,6 +222,7 @@ podman run --rm -it fedora:44 bash -c '
 | An install script did not re-run | `run_onchange_` reruns only when its content changes. Force all with `chezmoi state delete-bucket --bucket=entryState` |
 | A `run_once_` script must run again | `chezmoi state delete-bucket --bucket=scriptState` |
 | COPR enable fails | Check the COPR name and that it builds for this Fedora release |
+| `.ssh/config` missing on a machine | It's encrypted and skipped where there's no age key. Restore `~/.config/chezmoi/key.txt` from Bitwarden (`chezmoi-age-key`), then `chezmoi init && chezmoi apply` |
 | `chezmoi git -- push` asks for a username | The remote is HTTPS. Run `chezmoi git -- remote set-url origin git@github.com:cea2k/dotfiles.git` |
 
 ## Not managed here (on purpose)
