@@ -27,9 +27,9 @@ alias fd='fdfind'
 {{- end }}
 
 if command -v eza >/dev/null; then
-  alias ls='eza --icons'
-  alias ll='eza -l -g --icons --git'
-  alias tree='eza --tree --icons'
+  alias ls='eza --icons=auto'
+  alias ll='eza -l -g --icons=auto --git'
+  alias tree='eza --tree --icons=auto'
 fi
 command -v {{ if eq .chezmoi.osRelease.id "ubuntu" }}batcat{{ else }}bat{{ end }} >/dev/null && alias cat='bat'
 
@@ -69,3 +69,10 @@ for plugin in \
   [[ -r "$plugin" ]] && source "$plugin"
 done
 unset plugin sock
+
+# --- SSH keys served by Bitwarden desktop (keys never touch the repo) ------
+# Fixed path, set even if Bitwarden isn't running yet, so long-lived shells
+# (tmux) pick up the agent as soon as Bitwarden starts.
+if [[ -d "$HOME/.var/app/com.bitwarden.desktop" ]]; then
+  export SSH_AUTH_SOCK="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+fi
