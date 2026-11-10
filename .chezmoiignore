@@ -19,6 +19,7 @@ LICENSE
 .config/ghostty
 .config/mise
 .config/environment.d
+.local/bin/wl-screenrec
 {{- end }}
 
 {{- if ne .chezmoi.osRelease.id "fedora" }}

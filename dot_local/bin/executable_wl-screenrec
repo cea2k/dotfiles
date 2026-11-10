@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Wrapper around the mise-installed wl-screenrec.
+# Fedora's AMD VAAPI driver has no H.264 encode (patents) unless RPM Fusion's
+# mesa-va-drivers-freeworld is installed, but AV1 works. Callers that don't pick
+# a codec (like noctalia's Screen Toolkit) get AV1. Delete this file once
+# `rpm -q mesa-va-drivers-freeworld` succeeds.
+set -euo pipefail
+real="$(mise which wl-screenrec 2>/dev/null)" || { echo "wl-screenrec: not installed via mise" >&2; exit 127; }
+for arg in "$@"; do
+  [[ "$arg" == --codec* ]] && exec "$real" "$@"
+done
+exec "$real" --codec av1 --low-power=off "$@"
