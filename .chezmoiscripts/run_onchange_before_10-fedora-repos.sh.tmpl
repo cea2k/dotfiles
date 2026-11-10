@@ -21,7 +21,10 @@ fi
 
 gpu="$(lspci 2>/dev/null | grep -iE 'vga|3d|display' || true)"
 if grep -qi 'AMD/ATI' <<<"$gpu" && ! rpm -q mesa-va-drivers-freeworld >/dev/null 2>&1; then
-  sudo dnf swap -y mesa-va-drivers mesa-va-drivers-freeworld
+  # Best effort: freeworld often lags Fedora's Mesa, and dnf then refuses the swap.
+  # Without it AMD has no H.264 hw encode; wl-screenrec falls back to AV1 (see ~/.local/bin/wl-screenrec).
+  sudo dnf swap -y mesa-va-drivers mesa-va-drivers-freeworld \
+    || echo "[dotfiles] WARNING: mesa-va-drivers-freeworld not installable yet (lags Fedora Mesa); skipped" >&2
 fi
 if grep -qi 'Intel' <<<"$gpu" && ! rpm -q intel-media-driver >/dev/null 2>&1; then
   sudo dnf install -y intel-media-driver
