@@ -46,7 +46,7 @@ packages:
         - clang
         - libdrm-devel
         - freeglut-devel
-        - ffmpeg-free-devel
+        - ffmpeg-devel            # from RPM Fusion (repos script)
 
     flatpak:
       - com.bitwarden.desktop

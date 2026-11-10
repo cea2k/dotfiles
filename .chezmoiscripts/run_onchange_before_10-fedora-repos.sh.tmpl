@@ -9,7 +9,25 @@ rpm -q dnf5-plugins >/dev/null 2>&1 || sudo dnf install -y dnf5-plugins
 sudo dnf copr enable -y {{ . | quote }}
 {{ end }}
 
-{{- range .packages.fedora.repos }}
+# --- RPM Fusion: full ffmpeg (H.264/HEVC) and hardware video encode -------
+fedora_ver="$(rpm -E %fedora)"
+rpm -q rpmfusion-free-release rpmfusion-nonfree-release >/dev/null 2>&1 || sudo dnf install -y \
+  "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_ver}.noarch.rpm" \
+  "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${fedora_ver}.noarch.rpm"
+
+if rpm -q ffmpeg-free >/dev/null 2>&1; then
+  sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing
+fi
+
+gpu="$(lspci 2>/dev/null | grep -iE 'vga|3d|display' || true)"
+if grep -qi 'AMD/ATI' <<<"$gpu" && ! rpm -q mesa-va-drivers-freeworld >/dev/null 2>&1; then
+  sudo dnf swap -y mesa-va-drivers mesa-va-drivers-freeworld
+fi
+if grep -qi 'Intel' <<<"$gpu" && ! rpm -q intel-media-driver >/dev/null 2>&1; then
+  sudo dnf install -y intel-media-driver
+fi
+
+{{ range .packages.fedora.repos }}
 repo_file="/etc/yum.repos.d/$(basename {{ . | quote }})"
 if [ ! -f "$repo_file" ]; then
   sudo dnf config-manager addrepo --from-repofile={{ . | quote }}
