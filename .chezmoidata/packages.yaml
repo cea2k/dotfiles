@@ -41,6 +41,12 @@ packages:
       desktop:
         - niri
         - ghostty
+        # build deps for wl-screenrec (built by mise, see mise/config.toml)
+        - cargo
+        - clang
+        - libdrm-devel
+        - freeglut-devel
+        - ffmpeg-free-devel
 
     flatpak:
       - com.bitwarden.desktop

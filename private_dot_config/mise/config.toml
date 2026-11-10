@@ -3,3 +3,6 @@
 [tools]
 node = "lts"
 pnpm = "latest"
+
+# Screen recorder for niri. Not packaged in Fedora; built from crates.io.
+"cargo:wl-screenrec" = "latest"
