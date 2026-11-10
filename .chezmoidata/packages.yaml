@@ -41,6 +41,9 @@ packages:
       desktop:
         - niri
         - ghostty
+        - mpv                     # handles wl-screenrec's variable frame rate
+        - slurp                   # region selection for wl-screenrec
+        - libva-utils             # vainfo, to check hw encode support
         # build deps for wl-screenrec (built by mise, see mise/config.toml)
         - cargo
         - clang
