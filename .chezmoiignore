@@ -18,6 +18,7 @@ LICENSE
 .config/noctalia
 .config/ghostty
 .config/mise
+.config/environment.d
 {{- end }}
 
 {{- if ne .chezmoi.osRelease.id "fedora" }}
