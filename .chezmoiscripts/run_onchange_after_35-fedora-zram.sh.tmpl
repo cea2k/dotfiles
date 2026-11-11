@@ -1,0 +1,13 @@
+{{- if eq .chezmoi.osRelease.id "fedora" -}}
+#!/bin/bash
+# Compressed swap in RAM: half of RAM, capped at 16 GB (Fedora default: min(ram, 8 GB)).
+# More headroom before the kernel OOM killer acts. Takes effect on next boot.
+set -euo pipefail
+conf=/etc/systemd/zram-generator.conf
+want='[zram0]
+zram-size = min(ram / 2, 16384)'
+if [ "$(cat "$conf" 2>/dev/null)" != "$want" ]; then
+  printf '%s\n' "$want" | sudo tee "$conf" >/dev/null
+  echo "[dotfiles] zram config updated; reboot to apply (check with: swapon --show)"
+fi
+{{ end -}}

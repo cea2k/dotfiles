@@ -112,7 +112,7 @@ On `chezmoi apply`, things run in this order:
 
 1. `05` dnf baseline (first run only), `10` repos and COPR, `20` packages
 2. Files and externals are written
-3. `30` Flatpak, `40` mise runtimes, `45` tmux plugins, `50` default shell to zsh (first run only)
+3. `30` Flatpak, `35` zram swap size (applies on reboot), `40` mise runtimes, `45` tmux plugins, `50` default shell to zsh (first run only)
 
 ---
 
